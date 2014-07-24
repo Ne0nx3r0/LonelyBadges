@@ -1,6 +1,6 @@
 name: LonelyBadges
 main: com.ne0nx3r0.badges.LonelyBadgesPlugin
-version: '0.2a'
+version: '0.1a'
 database: false
 description: Badging system for players
 commands:

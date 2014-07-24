@@ -4,32 +4,44 @@ import java.util.HashMap;
 
 public class BadgePlayer {
     private final HashMap<String, Integer> properties;
+    private boolean dirty;
     
     BadgePlayer() {
-        
         this.properties = new HashMap<>();
+        
+        this.dirty = false;
     }
     
     void setProperty(String property, int newValue) {
-        this.properties.put(property, newValue);
+        if(this.properties.get(property) != newValue){
+            this.properties.put(property, newValue);
+
+            this.dirty = true;
+        }
     }
     
     void setProperty(String property, int newValue, BadgePropertyCondition bpc) {
-        if(bpc == BadgePropertyCondition.ALWAYS){
-            this.properties.put(property, newValue);
-        }
-        else {
-            Integer currentValue = this.properties.get(property);
+        Integer currentValue = this.properties.get(property);
             
-            if(bpc == BadgePropertyCondition.GREATER_THAN){
-                if(currentValue < newValue){
-                    this.properties.put(property, newValue);
-                }
+        if(bpc == BadgePropertyCondition.ALWAYS){
+            if(currentValue != newValue){
+                this.properties.put(property, newValue);
+
+                this.dirty = true;
             }
-            else/* if(bpc == BadgePropertyCondition.LESS_THAN)*/{
-                if(currentValue > newValue){
-                    this.properties.put(property, newValue);
-                }
+        }
+        else if(bpc == BadgePropertyCondition.GREATER_THAN){
+            if(currentValue < newValue){
+                this.properties.put(property, newValue);
+
+                this.dirty = true;
+            }
+        }
+        else/* if(bpc == BadgePropertyCondition.LESS_THAN)*/{
+            if(currentValue > newValue){
+                this.properties.put(property, newValue);
+
+                this.dirty = true;
             }
         }
     }
@@ -38,5 +50,13 @@ public class BadgePlayer {
         Integer currentValue = this.properties.get(property);
         
         this.properties.put(property, currentValue+newValue);
+    }
+    
+    void grantBadge(int BadgeId){
+        
+    }
+    
+    public boolean isDirty(){
+        return this.dirty;
     }
 }

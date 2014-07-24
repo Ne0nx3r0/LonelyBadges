@@ -1,14 +1,24 @@
 package com.ne0nx3r0.badges.badges;
 
+import com.ne0nx3r0.badges.LonelyBadgesPlugin;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.scheduler.BukkitTask;
 
-public class Badger {
+public class BadgeManager {
     private final Map<UUID,BadgePlayer> badgePlayers;
+    private final BukkitTask badgeAwardTask;
+    private final List<Badge> badges;
 
-    public Badger(){
+    public BadgeManager(LonelyBadgesPlugin plugin){
         this.badgePlayers = new HashMap<>();
+    
+        this.badges = new ArrayList<>();
+        
+        this.badgeAwardTask = plugin.getServer().getScheduler().runTaskTimer(plugin, new BadgeAwardTask(plugin,this), 20*10, 20*10);
     }
     
     // Set a property
@@ -42,5 +52,18 @@ public class Badger {
         }
         
         bp.adjustProperty(property,value);
+    }
+    
+    
+    
+    // DATABASE
+    public Badge RegisterBadge(String name,String description,BadgePropertyRequirement[] requirements){
+        int simulatedId = 1;
+        
+        Badge badge = new Badge(simulatedId,name,description,requirements);
+        
+        this.badges.add(badge);
+                
+        return badge;
     }
 }
