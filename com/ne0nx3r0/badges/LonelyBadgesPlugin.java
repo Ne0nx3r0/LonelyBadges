@@ -1,5 +1,6 @@
 package com.ne0nx3r0.badges;
 
+import com.ne0nx3r0.badges.badges.BadgeManager;
 import com.ne0nx3r0.badges.listeners.LonelyBadgesPlayerListener;
 import com.ne0nx3r0.badges.commands.BadgesCommandExecutor;
 import com.ne0nx3r0.badges.gui.GuiManager;
@@ -9,10 +10,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class LonelyBadgesPlugin extends JavaPlugin{
     private GuiManager gm;
+    private BadgeManager bm;
+    private Economy economy;
     
     @Override
     public void onEnable(){
@@ -32,15 +38,34 @@ public class LonelyBadgesPlugin extends JavaPlugin{
             return;
         }
         
+        Plugin vault = this.getServer().getPluginManager().getPlugin("Vault");
+        
+        if(vault != null && vault.isEnabled()){
+            RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+            if (economyProvider != null) {
+                this.economy = economyProvider.getProvider();
+            }
+        }
+        
         this.gm = new GuiManager(this);
         
         this.getCommand("badges").setExecutor(new BadgesCommandExecutor(this));
         
         this.getServer().getPluginManager().registerEvents(new LonelyBadgesPlayerListener(this), this);
+        
+        this.bm = new BadgeManager(this);
     }
     
     public GuiManager getGuiManager() {
         return this.gm;
+    }
+    
+    public BadgeManager getBadgeManager(){
+        return this.bm;
+    }
+    
+    public Economy getEconomy(){
+        return this.economy;
     }
 
     public void copy(InputStream in, File file) throws IOException

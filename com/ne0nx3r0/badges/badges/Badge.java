@@ -12,4 +12,16 @@ public class Badge {
         this.description = description;
         this.bpr = bpr;
     }
+    
+    public int getId(){
+        return this.id;
+    }
+
+    BadgePropertyRequirement[] getRequirements() {
+        return this.bpr;
+    }
+
+    public String getName() {
+        return this.name;
+    }
 }
