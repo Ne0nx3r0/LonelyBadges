@@ -1,13 +1,14 @@
 package com.ne0nx3r0.badges.badges;
 
 import com.ne0nx3r0.badges.LonelyBadgesPlugin;
+import java.util.Date;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.entity.Player;
 
 public class BadgeAwardTask implements Runnable{
     private final LonelyBadgesPlugin plugin;
     private final BadgeManager bm;
-    private Economy economy;
+    private final Economy economy;
     
     BadgeAwardTask(LonelyBadgesPlugin plugin, BadgeManager bm) {
         this.plugin = plugin;
@@ -25,7 +26,7 @@ public class BadgeAwardTask implements Runnable{
             }
             
             for(Badge badge : this.bm.getActiveBadges()){
-                if(!bp.hasBadge(badge)){
+                if(!bp.hasBadge(badge) && badge.getRequirements().length > 0){
                     for(BadgePropertyRequirement bpr : badge.getRequirements()){
                         if(bpr.getCondition().equals(BadgePropertyCondition.GREATER_THAN)){
                             if(bp.getProperty(bpr.getPropertyName()) <= bpr.getActivationValue()){
@@ -38,8 +39,10 @@ public class BadgeAwardTask implements Runnable{
                             }
                         }
                     }
+                    
+                    EarnedBadge earnedBadge = new EarnedBadge(badge,new Date(),null);
 
-                    bp.grantBadge(badge);
+                    bp.grantBadge(earnedBadge);
                     
                     Player player = plugin.getServer().getPlayer(bp.getUniqueId());
                     

@@ -8,13 +8,13 @@ import java.util.UUID;
 public class BadgePlayer {
     private final UUID uuid;
     private final HashMap<String, Integer> properties;
-    private final List<Badge> badges;
+    private final List<EarnedBadge> earnedBadges;
     private boolean dirty;
     
-    BadgePlayer(UUID uuid,HashMap<String, Integer> properties,List<Badge> badges) {
+    BadgePlayer(UUID uuid,HashMap<String, Integer> properties,List<EarnedBadge> earnedBadges) {
         this.uuid = uuid;
-        this.properties = new HashMap<>();
-        this.badges = new ArrayList<>();
+        this.properties = properties;
+        this.earnedBadges = earnedBadges;
         
         this.dirty = false;
     }
@@ -63,14 +63,19 @@ public class BadgePlayer {
         return this.dirty;
     }
     
-    public void grantBadge(Badge badge){
+    public void grantBadge(EarnedBadge earnedBadge){
         this.dirty = true;
         
-        this.badges.add(badge);
+        this.earnedBadges.add(earnedBadge);
     }
     
     public boolean hasBadge(Badge badge){
-        return this.badges.contains(badge);
+        for(EarnedBadge eb : this.earnedBadges){
+            if(eb.getBadge().equals(badge)){
+                return true;
+            }
+        }
+        return false;
     }
 
     public int getProperty(String propertyName) {
@@ -79,5 +84,17 @@ public class BadgePlayer {
     
     public UUID getUniqueId(){
         return this.uuid;
+    }
+    
+    public HashMap<String, Integer> getAllProperties(){
+        return this.properties;
+    }
+    
+    public List<EarnedBadge> getAllEarnedBadges(){
+        return this.earnedBadges;
+    }
+
+    void setDirty(boolean dirtyStatus) {
+        this.dirty = dirtyStatus;
     }
 }
