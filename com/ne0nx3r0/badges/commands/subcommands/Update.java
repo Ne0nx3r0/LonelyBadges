@@ -50,13 +50,25 @@ public class Update extends LonelyCommand{
             return true;
         }
         
-        String badgeName = args[0];
+        String sBadgeId = args[0];
+        
+        int badgeId = -1;
+        
+        try{
+            badgeId = Integer.parseInt(sBadgeId);
+        }
+        catch(Exception ex){
+            this.sendError(cs, badgeId+" is not a valid number!");
+            
+            return true;
+        }
+        
         String action = args[1];
         
-        Badge badge = this.plugin.getBadgeManager().getBadge(badgeName);
+        Badge badge = this.plugin.getBadgeManager().getBadge(badgeId);
         
         if(badge == null){
-            this.sendError(cs, badgeName+" is not a valid badge!");
+            this.sendError(cs, sBadgeId+" is not a valid badge ID!");
             
             return true;
         }
@@ -71,7 +83,7 @@ public class Update extends LonelyCommand{
             String newName = this.concatArgs(args);
             
             if(this.plugin.getBadgeManager().updateBadgeName(badge,newName)){
-                this.send(cs, "Updated the name for "+badge.getName()+" to "+newName);
+                this.send(cs, "Updated the name for "+badge.getId()+" to "+newName);
             }
             else {
                 this.sendError(cs, "An error occurred!");
@@ -112,7 +124,13 @@ public class Update extends LonelyCommand{
             }
         }
         else if(action.equalsIgnoreCase("setCondition")){
-            String propertyName = args[1];
+            if(args.length < 4){
+                this.send(cs,"/badges update <badgeId> setCondition <propertyName> <gt/lt/eq> <value>");
+                
+                return true;
+            }
+            
+            String propertyName = args[2];
             
             if(!this.plugin.getBadgeManager().isRegisteredProperty(propertyName)){
                 this.sendError(cs, propertyName+" is not a registered badge property!");
@@ -120,7 +138,7 @@ public class Update extends LonelyCommand{
                 return true;
             }
             
-            String sConditionType = args[2];
+            String sConditionType = args[3];
             BadgePropertyCondition bpc;
             
             switch(sConditionType){
@@ -138,7 +156,7 @@ public class Update extends LonelyCommand{
                     break;
             }
             
-            String sConditionValue = args[3];
+            String sConditionValue = args[4];
             int conditionValue = -1;
             
             try{
@@ -156,7 +174,13 @@ public class Update extends LonelyCommand{
             }
         }
         else if(action.equalsIgnoreCase("removeCondition")){
-            String propertyName = args[1];
+            if(args.length < 3){
+                this.send(cs,"/badges update <badgeId> removeCondition <propertyName>");
+                
+                return true;
+            }
+            
+            String propertyName = args[2];
             
             for(BadgePropertyRequirement bpr : badge.getRequirements()){
                 if(bpr.getPropertyName().equals(propertyName)){

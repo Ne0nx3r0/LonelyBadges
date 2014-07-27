@@ -17,6 +17,8 @@ public class BadgesCommandExecutor implements CommandExecutor {
         
         this.commands = new HashMap<>();
         
+        this.registerCommand(new Create(plugin));
+        this.registerCommand(new Update(plugin));
         this.registerCommand(new View(plugin));
     }
     

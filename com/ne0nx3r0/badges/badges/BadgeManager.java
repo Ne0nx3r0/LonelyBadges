@@ -20,8 +20,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 public class BadgeManager {
-    public static final String PROPERTY_PLAYER_MONEY = "lb.player_money";
-    public static final String PROPERTY_PLAYER_KILLS = "lb.player_kills";
+    public static final String PROPERTY_PLAYER_MONEY = "lb_player_money";
+    public static final String PROPERTY_PLAYER_KILLS = "lb_player_kills";
     
     private final Map<UUID,BadgePlayer> onlineBadgePlayers;
     private int badge_cardinality;
@@ -225,16 +225,25 @@ public class BadgeManager {
                 Material material = Material.valueOf(badgeSection.getString("material"));
                 byte materialData = Byte.parseByte(badgeSection.getString("materialData"));
 
-                ConfigurationSection badgeConditionsSection = badgeSection.getConfigurationSection("conditions");
-                BadgePropertyRequirement[] bpc = new BadgePropertyRequirement[badgeConditionsSection.getKeys(false).size()];
-                int i = 0;
-                for(String propertyName : badgeConditionsSection.getKeys(false)){
-                    BadgePropertyCondition conditionType = BadgePropertyCondition.valueOf(badgeConditionsSection.getString("condition"));
-                    int value = badgeConditionsSection.getInt("value");
+                BadgePropertyRequirement[] bpc;
+                
+                if(badgeSection.isSet("conditions")){
+                    ConfigurationSection badgeConditionsSection = badgeSection.getConfigurationSection("conditions");
 
-                    bpc[i] = new BadgePropertyRequirement(propertyName,conditionType,value);
+                    bpc = new BadgePropertyRequirement[badgeConditionsSection.getKeys(false).size()];
 
-                    i++;
+                    int i = 0;
+                    for(String propertyName : badgeConditionsSection.getKeys(false)){
+                        BadgePropertyCondition conditionType = BadgePropertyCondition.valueOf(badgeConditionsSection.getString("condition"));
+                        int value = badgeConditionsSection.getInt("value");
+
+                        bpc[i] = new BadgePropertyRequirement(propertyName,conditionType,value);
+
+                        i++;
+                    }
+                }
+                else {
+                    bpc = new BadgePropertyRequirement[]{};
                 }
 
                 this.activeBadges.add(new Badge(badgeId,material,materialData,badgeName,badgeDescription,bpc));
@@ -261,10 +270,13 @@ public class BadgeManager {
             badgesYml.set(badgeSection+"material",badge.getMaterial().toString());
             badgesYml.set(badgeSection+"materialData",badge.getMaterialData());
             
+            //reset requirements
+             badgesYml.set(badgeSection+"conditions","");
+            
             for(BadgePropertyRequirement bpr : badge.getRequirements()){
                 String name = bpr.getPropertyName();
                 
-                badgesYml.set(badgeSection+"conditions."+name+".condition",bpr.getCondition());
+                badgesYml.set(badgeSection+"conditions."+name+".condition",bpr.getCondition().toString());
                 badgesYml.set(badgeSection+"conditions."+name+".value",bpr.getActivationValue());
             }
         }    
@@ -285,6 +297,15 @@ public class BadgeManager {
     public Badge getBadge(String badgeName) {
         for(Badge badge : this.activeBadges){
             if(badge.getName().equalsIgnoreCase(badgeName)){
+                return badge;                
+            }
+        }
+        return null;
+    }
+    
+    public Badge getBadge(int badgeId) {
+        for(Badge badge : this.activeBadges){
+            if(badge.getId() == badgeId){
                 return badge;                
             }
         }
@@ -340,6 +361,8 @@ public class BadgeManager {
         }
         
         newBprs[newBprs.length-1] = new BadgePropertyRequirement(propertyName,bpc,conditionValue);
+        
+        badge.setRequirements(newBprs);
         
         return true;
     }
