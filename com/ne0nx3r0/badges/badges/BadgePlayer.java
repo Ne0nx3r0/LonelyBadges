@@ -27,24 +27,24 @@ public class BadgePlayer {
         }
     }
     
-    void setProperty(String property, int newValue, BadgePropertyCondition bpc) {
+    void setProperty(String property, int newValue, BadgePropertyUpdateCondition bpc) {
         Integer currentValue = this.properties.get(property);
             
-        if(bpc == BadgePropertyCondition.ALWAYS){
+        if(bpc == BadgePropertyUpdateCondition.ALWAYS){
             if(currentValue != newValue){
                 this.properties.put(property, newValue);
 
                 this.dirty = true;
             }
         }
-        else if(bpc == BadgePropertyCondition.GREATER_THAN){
+        else if(bpc == BadgePropertyUpdateCondition.GREATER_THAN){
             if(currentValue < newValue){
                 this.properties.put(property, newValue);
 
                 this.dirty = true;
             }
         }
-        else/* if(bpc == BadgePropertyCondition.LESS_THAN)*/{
+        else/* if(bpc == BadgePropertyUpdateCondition.LESS_THAN)*/{
             if(currentValue > newValue){
                 this.properties.put(property, newValue);
 

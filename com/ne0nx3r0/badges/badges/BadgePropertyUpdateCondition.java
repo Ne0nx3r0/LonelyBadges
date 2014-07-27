@@ -1,7 +1,7 @@
 package com.ne0nx3r0.badges.badges;
 
-public enum BadgePropertyCondition{
-    EQUALS,
+public enum BadgePropertyUpdateCondition{
+    ALWAYS,
     LESS_THAN,
     GREATER_THAN
 }
