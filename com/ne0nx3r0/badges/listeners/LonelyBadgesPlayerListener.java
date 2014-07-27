@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 public class LonelyBadgesPlayerListener implements Listener {
     private final BadgeManager bm;
@@ -20,9 +21,15 @@ public class LonelyBadgesPlayerListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerKilled(PlayerDeathEvent e){
         Player pKiller = e.getEntity().getKiller();
-        
+
         if(pKiller != null){
             this.bm.AdjustGlobalBadgeProperty(pKiller.getUniqueId(), BadgeManager.PROPERTY_PLAYER_KILLS, 1);
         }
+    }
+    
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerInteractTempBra(PlayerInteractEvent e){
+       this.bm.AdjustGlobalBadgeProperty(e.getPlayer().getUniqueId(), BadgeManager.PROPERTY_PLAYER_KILLS, 1);
+       
     }
 }

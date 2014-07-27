@@ -2,6 +2,7 @@ package com.ne0nx3r0.badges.badges;
 
 import com.ne0nx3r0.badges.LonelyBadgesPlugin;
 import java.util.Date;
+import java.util.logging.Level;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.entity.Player;
 
@@ -19,10 +20,16 @@ public class BadgeAwardTask implements Runnable{
     @Override
     public void run() {
         for(BadgePlayer bp : this.bm.getOnlineBadgePlayers()){
-            if(this.economy != null){
-                for(Player p : plugin.getServer().getOnlinePlayers()){
-                    this.bm.SetGlobalBadgeProperty(p.getUniqueId(), BadgeManager.PROPERTY_PLAYER_MONEY, (int) this.economy.getBalance(p.getName()));
+            try{
+                if(this.economy != null){
+                    for(Player p : plugin.getServer().getOnlinePlayers()){                    
+                        this.bm.SetGlobalBadgeProperty(p.getUniqueId(), BadgeManager.PROPERTY_PLAYER_MONEY, (int) this.economy.getBalance(p.getName()));
+                    }
                 }
+            }
+            catch(Exception ex){
+                this.plugin.getLogger().log(Level.SEVERE, "Economy error occurred!");
+               // this.plugin.getLogger().log(Level.SEVERE, null, ex);
             }
             
             for(Badge badge : this.bm.getActiveBadges()){

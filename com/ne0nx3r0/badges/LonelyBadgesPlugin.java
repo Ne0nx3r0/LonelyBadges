@@ -51,12 +51,12 @@ public class LonelyBadgesPlugin extends JavaPlugin{
         
         this.getCommand("badges").setExecutor(new BadgesCommandExecutor(this));
         
-        this.getServer().getPluginManager().registerEvents(new LonelyBadgesPlayerListener(this), this);
-        
         this.bm = new BadgeManager(this);
         
         this.bm.registerProperty(BadgeManager.PROPERTY_PLAYER_KILLS,"Player killed another player");
         this.bm.registerProperty(BadgeManager.PROPERTY_PLAYER_MONEY,"Current money balance from Vault");
+        
+        this.getServer().getPluginManager().registerEvents(new LonelyBadgesPlayerListener(this), this);
     }
     
     public GuiManager getGuiManager() {

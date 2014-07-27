@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -124,44 +125,54 @@ public class BadgeManager {
         
         List<EarnedBadge> earnedBadges = new ArrayList<>();
         
-        File playerFile = new File(this.plugin.getDataFolder().getAbsolutePath()+"playerBadges",uuid.toString()+".yml");
-        
-        System.out.println(playerFile.getAbsolutePath());
+        File playerFile = new File(this.plugin.getDataFolder().getAbsolutePath()+File.separator+"playerBadges",uuid.toString()+".yml");
+
+        System.out.println(this.plugin.getDataFolder().getAbsolutePath()+"playerBadges");
         
         if(!playerFile.exists()){
-            return new BadgePlayer(uuid,properties,earnedBadges);
+            BadgePlayer bp = new BadgePlayer(uuid,properties,earnedBadges);
+            
+            bp.setDirty(true);
+            
+            this.onlineBadgePlayers.put(uuid, bp);
+            
+            return bp;
         }
         
         FileConfiguration playerYml = YamlConfiguration.loadConfiguration(playerFile);
         
-        ConfigurationSection propertiesSection = playerYml.getConfigurationSection("properties");
-        
-        for(String propertyName : propertiesSection.getKeys(false)){
-            properties.put(propertyName, propertiesSection.getInt(propertyName));
+        if(playerYml.isSet("properties")){
+            ConfigurationSection propertiesSection = playerYml.getConfigurationSection("properties");
+            
+            for(String propertyName : propertiesSection.getKeys(false)){
+                properties.put(propertyName, propertiesSection.getInt(propertyName));
+            }
         }
         
-        ConfigurationSection badgesSection = playerYml.getConfigurationSection("badges");
-        
-        for(String sBadgeId : badgesSection.getKeys(false)){
-            int badgeId = Integer.parseInt(sBadgeId);
-            
-            Date awardedOn;
-            
-            try {
-                awardedOn = TimeThing.getTimeObj(badgesSection.getString(sBadgeId+".awardedOn"));
-            } 
-            catch (ParseException ex) {
-                this.plugin.getLogger().log(Level.SEVERE, "Invalid awarded on string for badge id {0} for player {1}", new Object[]{badgeId, uuid.toString()});
-                this.plugin.getLogger().log(Level.SEVERE, null, ex);
-                
-                awardedOn = null;
-            }
-            
-            String note = badgesSection.getString(sBadgeId+".note");
-            
-            for(Badge badge : this.activeBadges){
-                if(badge.getId() == badgeId){
-                    earnedBadges.add(new EarnedBadge(badge,awardedOn,note));
+        if(playerYml.isSet("badges")){
+            ConfigurationSection badgesSection = playerYml.getConfigurationSection("badges");
+
+            for(String sBadgeId : badgesSection.getKeys(false)){
+                int badgeId = Integer.parseInt(sBadgeId);
+
+                Date awardedOn;
+
+                try {
+                    awardedOn = TimeThing.getTimeObj(badgesSection.getString(sBadgeId+".awardedOn"));
+                } 
+                catch (ParseException ex) {
+                    this.plugin.getLogger().log(Level.SEVERE, "Invalid awarded on string for badge id {0} for player {1}", new Object[]{badgeId, uuid.toString()});
+                    this.plugin.getLogger().log(Level.SEVERE, null, ex);
+
+                    awardedOn = null;
+                }
+
+                String note = badgesSection.getString(sBadgeId+".note");
+
+                for(Badge badge : this.activeBadges){
+                    if(badge.getId() == badgeId){
+                        earnedBadges.add(new EarnedBadge(badge,awardedOn,note));
+                    }
                 }
             }
         }
@@ -174,10 +185,18 @@ public class BadgeManager {
     }
     
     public void saveBadgePlayer(BadgePlayer bp){
-        File playerFile = new File(this.plugin.getDataFolder().getAbsolutePath()+"playerBadges",bp.getUniqueId().toString()+".yml");
+        File playerFile = new File(this.plugin.getDataFolder().getAbsolutePath()+File.separator+"playerBadges",bp.getUniqueId().toString()+".yml");
+        
+        System.out.println(playerFile);
+        try {
+            System.out.println(playerFile.createNewFile());
+        } catch (IOException ex) {
+            Logger.getLogger(BadgeManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         
         if(!playerFile.exists()){
-            playerFile.mkdirs();
+            playerFile.mkdir();
         }
         
         FileConfiguration playerYml = YamlConfiguration.loadConfiguration(playerFile);
@@ -234,8 +253,8 @@ public class BadgeManager {
 
                     int i = 0;
                     for(String propertyName : badgeConditionsSection.getKeys(false)){
-                        BadgePropertyCondition conditionType = BadgePropertyCondition.valueOf(badgeConditionsSection.getString("condition"));
-                        int value = badgeConditionsSection.getInt("value");
+                        BadgePropertyCondition conditionType = BadgePropertyCondition.valueOf(badgeConditionsSection.getString(propertyName+".condition"));
+                        int value = badgeConditionsSection.getInt(propertyName+".value");
 
                         bpc[i] = new BadgePropertyRequirement(propertyName,conditionType,value);
 

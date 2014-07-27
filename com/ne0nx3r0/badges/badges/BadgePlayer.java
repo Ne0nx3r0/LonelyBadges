@@ -1,6 +1,5 @@
 package com.ne0nx3r0.badges.badges;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -56,7 +55,12 @@ public class BadgePlayer {
     void adjustProperty(String property, int newValue) {
         Integer currentValue = this.properties.get(property);
         
-        this.properties.put(property, currentValue+newValue);
+        if(currentValue != null){
+            this.properties.put(property, currentValue+newValue);
+        }
+        else {
+            this.properties.put(property, newValue);
+        }
     }
     
     public boolean isDirty(){
