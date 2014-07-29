@@ -58,7 +58,7 @@ public class Update extends LonelyCommand{
             badgeId = Integer.parseInt(sBadgeId);
         }
         catch(Exception ex){
-            this.sendError(cs, badgeId+" is not a valid number!");
+            this.sendError(cs, sBadgeId+" is not a valid number!");
             
             return true;
         }

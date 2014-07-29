@@ -55,6 +55,7 @@ public class LonelyBadgesPlugin extends JavaPlugin{
         
         this.bm.registerProperty(BadgeManager.PROPERTY_PLAYER_KILLS,"Player killed another player");
         this.bm.registerProperty(BadgeManager.PROPERTY_PLAYER_MONEY,"Current money balance from Vault");
+        this.bm.registerProperty(BadgeManager.PROPERTY_PLAYER_DEATHS,"Number of player deaths");
         
         this.getServer().getPluginManager().registerEvents(new LonelyBadgesPlayerListener(this), this);
     }

@@ -24,4 +24,8 @@ public class EarnedBadge {
     public String getNote(){
         return this.note;
     }
+
+    public boolean hasNote() {
+        return this.note != null;
+    }
 }

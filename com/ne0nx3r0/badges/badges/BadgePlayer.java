@@ -61,6 +61,8 @@ public class BadgePlayer {
         else {
             this.properties.put(property, newValue);
         }
+        
+        this.dirty = true;
     }
     
     public boolean isDirty(){
@@ -82,7 +84,7 @@ public class BadgePlayer {
         return false;
     }
 
-    public int getProperty(String propertyName) {
+    public Integer getProperty(String propertyName) {
         return this.properties.get(propertyName);
     }
     

@@ -2,6 +2,7 @@ package com.ne0nx3r0.badges.commands.subcommands;
 
 import com.ne0nx3r0.badges.LonelyBadgesPlugin;
 import com.ne0nx3r0.badges.commands.LonelyCommand;
+import java.util.UUID;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -32,13 +33,24 @@ public class View extends LonelyCommand{
         String viewBadgesFor = "";
         
         if(args.length == 0){
-            viewBadgesFor = player.getName();
+            this.plugin.getGuiManager().openViewBadgesForScreen(player,player.getUniqueId());
         }
         else {
             viewBadgesFor = args[0];
-        }
         
-        this.plugin.getGuiManager().openViewBadgesForScreen(cs,viewBadgesFor);
+            Player pViewBadgesFor = this.plugin.getServer().getPlayer(viewBadgesFor);
+
+            UUID uuidBadgesFor;
+
+            if(pViewBadgesFor != null){
+                uuidBadgesFor = pViewBadgesFor.getUniqueId();
+            }
+            else{
+                uuidBadgesFor = this.plugin.getServer().getOfflinePlayer(viewBadgesFor).getUniqueId();
+            }
+
+            this.plugin.getGuiManager().openViewBadgesForScreen(player,uuidBadgesFor);
+        }
         
         return true;
     }

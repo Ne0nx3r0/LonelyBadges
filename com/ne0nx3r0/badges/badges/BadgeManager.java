@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.lang.ArrayUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -23,6 +23,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class BadgeManager {
     public static final String PROPERTY_PLAYER_MONEY = "lb_player_money";
     public static final String PROPERTY_PLAYER_KILLS = "lb_player_kills";
+    public static final String PROPERTY_PLAYER_DEATHS = "lb_player_deaths";
     
     private final Map<UUID,BadgePlayer> onlineBadgePlayers;
     private int badge_cardinality;
@@ -62,9 +63,22 @@ public class BadgeManager {
                         
                         bp.setDirty(false);
                     }
+                    else if(Bukkit.getServer().getPlayer(bp.getUniqueId()) == null){
+                        bm.unloadBadgePlayer(bp.getUniqueId());
+                    }
                 }
             }
         }, 20*60, 20*60);
+    }
+    
+    public BadgePlayer getBadgePlayer(UUID uuid) {
+        BadgePlayer bp = this.onlineBadgePlayers.get(uuid);
+        
+        if(bp != null){
+            bp = this.loadBadgePlayer(uuid);
+        }
+        
+        return bp;        
     }
     
     // Set a property
@@ -127,8 +141,6 @@ public class BadgeManager {
         
         File playerFile = new File(this.plugin.getDataFolder().getAbsolutePath()+File.separator+"playerBadges",uuid.toString()+".yml");
 
-        System.out.println(this.plugin.getDataFolder().getAbsolutePath()+"playerBadges");
-        
         if(!playerFile.exists()){
             BadgePlayer bp = new BadgePlayer(uuid,properties,earnedBadges);
             
@@ -187,26 +199,32 @@ public class BadgeManager {
     public void saveBadgePlayer(BadgePlayer bp){
         File playerFile = new File(this.plugin.getDataFolder().getAbsolutePath()+File.separator+"playerBadges",bp.getUniqueId().toString()+".yml");
         
-        System.out.println(playerFile);
-        try {
-            System.out.println(playerFile.createNewFile());
-        } catch (IOException ex) {
-            Logger.getLogger(BadgeManager.class.getName()).log(Level.SEVERE, null, ex);
+        if(!playerFile.getParentFile().exists()){
+            playerFile.getParentFile().mkdirs();
         }
         
-        
         if(!playerFile.exists()){
-            playerFile.mkdir();
+            try {
+                playerFile.createNewFile();
+            } 
+            catch (IOException ex) {
+                this.plugin.getLogger().log(Level.SEVERE, "Error occurred saving file for {0}!", bp.getUniqueId());
+                
+                this.plugin.getLogger().log(Level.SEVERE, null, ex);
+            }
         }
         
         FileConfiguration playerYml = YamlConfiguration.loadConfiguration(playerFile);
+        
+        playerYml.set("badges","");
+        playerYml.set("properties","");
         
         List<EarnedBadge> allBadges = bp.getAllEarnedBadges();
 
         for(EarnedBadge eb : allBadges){
             String badgeSection = "badges."+eb.getBadge().getId();
             
-            playerYml.set(badgeSection+".awardedOn",eb.getAwardedDate());
+            playerYml.set(badgeSection+".awardedOn",TimeThing.getTimeString(eb.getAwardedDate()));
             playerYml.set(badgeSection+".note",eb.getNote());
         }
         
@@ -220,6 +238,14 @@ public class BadgeManager {
             this.plugin.getLogger().log(Level.WARNING, "Unable to save badge data for {0}!", bp.getUniqueId());
             
             this.plugin.getLogger().log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void unloadBadgePlayer(UUID uniqueId) {
+        BadgePlayer bp = this.onlineBadgePlayers.remove(uniqueId);
+        
+        if(bp != null){
+            this.saveBadgePlayer(bp);
         }
     }
     
