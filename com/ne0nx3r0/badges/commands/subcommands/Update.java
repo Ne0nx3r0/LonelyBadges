@@ -152,7 +152,7 @@ public class Update extends LonelyCommand{
                     bpc = BadgePropertyCondition.EQUALS;
                     break;
                 case "lt":
-                    bpc = BadgePropertyCondition.GREATER_THAN;
+                    bpc = BadgePropertyCondition.LESS_THAN;
                     break;
             }
             
@@ -167,7 +167,7 @@ public class Update extends LonelyCommand{
             }
 
             if(this.plugin.getBadgeManager().setBadgeCondition(badge,propertyName,bpc,conditionValue)){
-                this.send(cs, "Added condition ("+propertyName+" "+sConditionType+" "+conditionValue+") to "+badge.getName()+"!");
+                this.send(cs, "Set condition ("+propertyName+" "+sConditionType+" "+conditionValue+") to "+badge.getName()+"!");
             }
             else {
                 this.sendError(cs, "An error occurred!");

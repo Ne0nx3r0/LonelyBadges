@@ -1,4 +1,4 @@
-package com.ne0nx3r0.util;
+package com.ne0nx3r0.badges.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

@@ -1,7 +1,7 @@
 package com.ne0nx3r0.badges.badges;
 
 import com.ne0nx3r0.badges.LonelyBadgesPlugin;
-import com.ne0nx3r0.util.TimeThing;
+import com.ne0nx3r0.badges.util.TimeThing;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -74,7 +74,7 @@ public class BadgeManager {
     public BadgePlayer getBadgePlayer(UUID uuid) {
         BadgePlayer bp = this.onlineBadgePlayers.get(uuid);
         
-        if(bp != null){
+        if(bp == null){
             bp = this.loadBadgePlayer(uuid);
         }
         
@@ -122,6 +122,8 @@ public class BadgeManager {
         Badge badge = new Badge(id,material,materialData,name,null,new BadgePropertyRequirement[]{});
         
         this.activeBadges.add(badge);
+        
+        this.badgesAreDirty = true;
                 
         return badge;
     }
@@ -164,26 +166,28 @@ public class BadgeManager {
         if(playerYml.isSet("badges")){
             ConfigurationSection badgesSection = playerYml.getConfigurationSection("badges");
 
-            for(String sBadgeId : badgesSection.getKeys(false)){
-                int badgeId = Integer.parseInt(sBadgeId);
+            if(badgesSection != null){
+                for(String sBadgeId : badgesSection.getKeys(false)){
+                    int badgeId = Integer.parseInt(sBadgeId);
 
-                Date awardedOn;
+                    Date awardedOn;
 
-                try {
-                    awardedOn = TimeThing.getTimeObj(badgesSection.getString(sBadgeId+".awardedOn"));
-                } 
-                catch (ParseException ex) {
-                    this.plugin.getLogger().log(Level.SEVERE, "Invalid awarded on string for badge id {0} for player {1}", new Object[]{badgeId, uuid.toString()});
-                    this.plugin.getLogger().log(Level.SEVERE, null, ex);
+                    try {
+                        awardedOn = TimeThing.getTimeObj(badgesSection.getString(sBadgeId+".awardedOn"));
+                    } 
+                    catch (ParseException ex) {
+                        this.plugin.getLogger().log(Level.SEVERE, "Invalid awarded on string for badge id {0} for player {1}", new Object[]{badgeId, uuid.toString()});
+                        this.plugin.getLogger().log(Level.SEVERE, null, ex);
 
-                    awardedOn = null;
-                }
+                        awardedOn = null;
+                    }
 
-                String note = badgesSection.getString(sBadgeId+".note");
+                    String note = badgesSection.getString(sBadgeId+".note");
 
-                for(Badge badge : this.activeBadges){
-                    if(badge.getId() == badgeId){
-                        earnedBadges.add(new EarnedBadge(badge,awardedOn,note));
+                    for(Badge badge : this.activeBadges){
+                        if(badge.getId() == badgeId){
+                            earnedBadges.add(new EarnedBadge(badge,awardedOn,note));
+                        }
                     }
                 }
             }
@@ -256,46 +260,49 @@ public class BadgeManager {
         
         this.activeBadges.clear();
         
-        if(badgesYml.isSet("badges")){
+        this.badge_cardinality = 1;
+                
+        if(badgesYml.isSet("cardinality") && badgesYml.isSet("badges")){
             this.badge_cardinality = badgesYml.getInt("cardinality");
             
             ConfigurationSection badgesSection = badgesYml.getConfigurationSection("badges");
 
-            for(String sBadgeId : badgesSection.getKeys(false)){
-                ConfigurationSection badgeSection = badgesSection.getConfigurationSection(sBadgeId);
+            if(badgesSection != null){
+                for(String sBadgeId : badgesSection.getKeys(false)){
+                    ConfigurationSection badgeSection = badgesSection.getConfigurationSection(sBadgeId);
 
-                int badgeId = Integer.parseInt(sBadgeId);
-                String badgeName = badgeSection.getString("name");
-                String badgeDescription = badgeSection.getString("description");
-                Material material = Material.valueOf(badgeSection.getString("material"));
-                byte materialData = Byte.parseByte(badgeSection.getString("materialData"));
+                    int badgeId = Integer.parseInt(sBadgeId);
+                    String badgeName = badgeSection.getString("name");
+                    String badgeDescription = badgeSection.getString("description");
+                    Material material = Material.valueOf(badgeSection.getString("material"));
+                    byte materialData = Byte.parseByte(badgeSection.getString("materialData"));
 
-                BadgePropertyRequirement[] bpc;
-                
-                if(badgeSection.isSet("conditions")){
-                    ConfigurationSection badgeConditionsSection = badgeSection.getConfigurationSection("conditions");
+                    BadgePropertyRequirement[] bpc;
 
-                    bpc = new BadgePropertyRequirement[badgeConditionsSection.getKeys(false).size()];
+                    if(badgeSection.isSet("conditions")){
+                        ConfigurationSection badgeConditionsSection = badgeSection.getConfigurationSection("conditions");
 
-                    int i = 0;
-                    for(String propertyName : badgeConditionsSection.getKeys(false)){
-                        BadgePropertyCondition conditionType = BadgePropertyCondition.valueOf(badgeConditionsSection.getString(propertyName+".condition"));
-                        int value = badgeConditionsSection.getInt(propertyName+".value");
+                        bpc = new BadgePropertyRequirement[badgeConditionsSection.getKeys(false).size()];
 
-                        bpc[i] = new BadgePropertyRequirement(propertyName,conditionType,value);
+                        int i = 0;
+                        for(String propertyName : badgeConditionsSection.getKeys(false)){
+                            BadgePropertyCondition conditionType = BadgePropertyCondition.valueOf(badgeConditionsSection.getString(propertyName+".condition"));
+                            int value = badgeConditionsSection.getInt(propertyName+".value");
 
-                        i++;
+                            bpc[i] = new BadgePropertyRequirement(propertyName,conditionType,value);
+
+                            i++;
+                        }
                     }
-                }
-                else {
-                    bpc = new BadgePropertyRequirement[]{};
-                }
+                    else {
+                        bpc = new BadgePropertyRequirement[]{};
+                    }
 
-                this.activeBadges.add(new Badge(badgeId,material,materialData,badgeName,badgeDescription,bpc));
+                    System.out.println("loaded badge:"+badgeId+","+material+","+materialData+","+badgeName+","+badgeDescription+","+bpc);
+
+                    this.activeBadges.add(new Badge(badgeId,material,materialData,badgeName,badgeDescription,bpc));
+                }
             }
-        }
-        else {
-            this.badge_cardinality = 1;
         }
     }
     
@@ -306,6 +313,8 @@ public class BadgeManager {
         
         // reset badges
         badgesYml.set("badges", "");
+        
+        badgesYml.set("cardinality", this.badge_cardinality);
         
         for(Badge badge : this.activeBadges){
             String badgeSection = "badges."+badge.getId()+".";
@@ -425,5 +434,17 @@ public class BadgeManager {
         }
         
         return false;
+    }
+
+    public void saveAll() {
+        if(this.badgesAreDirty){
+            this.saveBadges();
+        }
+
+        for(BadgePlayer bp : this.onlineBadgePlayers.values()){
+            if(bp.isDirty()){
+                this.saveBadgePlayer(bp);
+            }
+        }
     }
 }

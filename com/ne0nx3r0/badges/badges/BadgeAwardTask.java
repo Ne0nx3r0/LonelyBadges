@@ -1,9 +1,14 @@
 package com.ne0nx3r0.badges.badges;
 
 import com.ne0nx3r0.badges.LonelyBadgesPlugin;
+import com.ne0nx3r0.badges.util.FancyMessage;
 import java.util.Date;
 import net.milkbowl.vault.economy.Economy;
+import net.minecraft.server.v1_7_R3.ChatSerializer;
+import net.minecraft.server.v1_7_R3.IChatBaseComponent;
+import net.minecraft.server.v1_7_R3.PacketPlayOutChat;
 import org.bukkit.ChatColor;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 public class BadgeAwardTask implements Runnable{
@@ -16,7 +21,7 @@ public class BadgeAwardTask implements Runnable{
         this.bm = bm;
         this.economy = plugin.getEconomy();
     }
-
+    
     @Override
     public void run() {
         for(BadgePlayer bp : this.bm.getOnlineBadgePlayers()){
@@ -56,6 +61,16 @@ public class BadgeAwardTask implements Runnable{
                                 break;
                             }
                         }
+                        else if(bpr.getCondition().equals(BadgePropertyCondition.EQUALS)){
+                            if(propertyValue != bpr.getActivationValue()){
+                                playerEarnedBadge = false;
+                                break;
+                            }
+                        }
+                        else {
+                            playerEarnedBadge = false;
+                            break;
+                        }
                     }
                     
                     if(playerEarnedBadge){
@@ -64,8 +79,20 @@ public class BadgeAwardTask implements Runnable{
                         bp.grantBadge(earnedBadge);
 
                         Player player = plugin.getServer().getPlayer(bp.getUniqueId());
-
-                        plugin.getServer().broadcastMessage(player.getName()+" earned the "+ChatColor.GOLD+badge.getName()+ChatColor.RESET+" badge!");
+                        
+                        String rawMessage = new FancyMessage(player.getName()+" has earned the ")
+                            .then(badge.getName())
+                                .color(ChatColor.GOLD)
+                                .style(ChatColor.BOLD)
+                                .itemTooltip(earnedBadge.getItem())
+                            .then(" badge!")
+                            .toJSONString();
+                        
+                        for(Player p : plugin.getServer().getOnlinePlayers()){
+                            IChatBaseComponent comp = ChatSerializer.a(rawMessage);
+                            PacketPlayOutChat packet = new PacketPlayOutChat(comp, true);
+                            ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
+                        }
                     }
                 }
             }

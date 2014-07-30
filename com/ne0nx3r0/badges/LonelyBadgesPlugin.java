@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -58,6 +59,17 @@ public class LonelyBadgesPlugin extends JavaPlugin{
         this.bm.registerProperty(BadgeManager.PROPERTY_PLAYER_DEATHS,"Number of player deaths");
         
         this.getServer().getPluginManager().registerEvents(new LonelyBadgesPlayerListener(this), this);
+    }
+    
+    @Override
+    public void onDisable(){
+        for(Player p : this.getServer().getOnlinePlayers()){
+            if(this.gm.isBadgesInventory(p.getInventory())){
+                p.closeInventory();
+            }
+        }
+        
+        this.bm.saveAll();
     }
     
     public GuiManager getGuiManager() {
