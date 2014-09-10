@@ -1,6 +1,7 @@
 package com.ne0nx3r0.badges.badges;
 
 import com.ne0nx3r0.badges.LonelyBadgesPlugin;
+import com.ne0nx3r0.badges.util.FancyMessage;
 import com.ne0nx3r0.badges.util.TimeThing;
 import java.io.File;
 import java.io.IOException;
@@ -8,17 +9,24 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Level;
+import net.minecraft.server.v1_7_R4.ChatSerializer;
+import net.minecraft.server.v1_7_R4.IChatBaseComponent;
+import net.minecraft.server.v1_7_R4.PacketPlayOutChat;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
+import org.bukkit.entity.Player;
 
 public class BadgeManager {
     public static final String PROPERTY_PLAYER_MONEY = "lb_player_money";
@@ -57,14 +65,20 @@ public class BadgeManager {
                     bm.saveBadges();
                 }
                 
-                for(BadgePlayer bp : bm.onlineBadgePlayers.values()){
+                Iterator<Entry<UUID, BadgePlayer>> iter = bm.onlineBadgePlayers.entrySet().iterator();
+                
+                while(iter.hasNext()){
+                    BadgePlayer bp = iter.next().getValue();
+                    
                     if(bp.isDirty()){
                         bm.saveBadgePlayer(bp);
                         
                         bp.setDirty(false);
                     }
                     else if(Bukkit.getServer().getPlayer(bp.getUniqueId()) == null){
-                        bm.unloadBadgePlayer(bp.getUniqueId());
+                        bm.saveBadgePlayer(bp);
+                        
+                        iter.remove();
                     }
                 }
             }
@@ -200,7 +214,11 @@ public class BadgeManager {
         return badgePlayer;
     }
     
-    public void saveBadgePlayer(BadgePlayer bp){
+    public void saveBadgePlayer(BadgePlayer bp){    
+        if(bp.getAllEarnedBadges().isEmpty() && bp.getAllProperties().isEmpty()){
+            return;
+        }
+        
         File playerFile = new File(this.plugin.getDataFolder().getAbsolutePath()+File.separator+"playerBadges",bp.getUniqueId().toString()+".yml");
         
         if(!playerFile.getParentFile().exists()){
@@ -278,10 +296,10 @@ public class BadgeManager {
                     byte materialData = Byte.parseByte(badgeSection.getString("materialData"));
 
                     BadgePropertyRequirement[] bpc;
+                    
+                    ConfigurationSection badgeConditionsSection = badgeSection.getConfigurationSection("conditions");
 
-                    if(badgeSection.isSet("conditions")){
-                        ConfigurationSection badgeConditionsSection = badgeSection.getConfigurationSection("conditions");
-
+                    if(badgeConditionsSection != null){
                         bpc = new BadgePropertyRequirement[badgeConditionsSection.getKeys(false).size()];
 
                         int i = 0;
@@ -446,5 +464,33 @@ public class BadgeManager {
                 this.saveBadgePlayer(bp);
             }
         }
+    }
+    
+    public void awardPlayerBadge(BadgePlayer bp, Badge badge, String note, boolean announce) {
+        EarnedBadge earnedBadge = new EarnedBadge(badge,new Date(),note);
+
+        bp.grantBadge(earnedBadge);
+
+        Player player = plugin.getServer().getPlayer(bp.getUniqueId());
+
+        String rawMessage = new FancyMessage(player.getName()+" has earned the ")
+            .then(badge.getName())
+                .color(ChatColor.GOLD)
+                .style(ChatColor.BOLD)
+                .itemTooltip(earnedBadge.getItem())
+            .then(" badge!")
+            .toJSONString();
+
+        if(announce){
+            for(Player p : plugin.getServer().getOnlinePlayers()){
+                IChatBaseComponent comp = ChatSerializer.a(rawMessage);
+                PacketPlayOutChat packet = new PacketPlayOutChat(comp, true);
+                ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
+            }
+        }
+    }
+
+    public HashMap<String, String> getAllProperties() {
+        return this.registeredProperties;
     }
 }

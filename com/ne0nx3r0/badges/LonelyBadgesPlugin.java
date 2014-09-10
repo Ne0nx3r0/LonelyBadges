@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.UUID;
 import java.util.logging.Level;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.entity.Player;
@@ -16,7 +17,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class LonelyBadgesPlugin extends JavaPlugin{
+public class LonelyBadgesPlugin extends JavaPlugin implements LonelyBadgesAPI{
     private GuiManager gm;
     private BadgeManager bm;
     private Economy economy;
@@ -72,14 +73,6 @@ public class LonelyBadgesPlugin extends JavaPlugin{
         this.bm.saveAll();
     }
     
-    public GuiManager getGuiManager() {
-        return this.gm;
-    }
-    
-    public BadgeManager getBadgeManager(){
-        return this.bm;
-    }
-    
     public Economy getEconomy(){
         return this.economy;
     }
@@ -95,5 +88,32 @@ public class LonelyBadgesPlugin extends JavaPlugin{
             }
         }
         in.close();
+    }
+    
+// API
+    
+    @Override
+    public GuiManager getGuiManager() {
+        return this.gm;
+    }
+    
+    @Override
+    public BadgeManager getBadgeManager(){
+        return this.bm;
+    }
+
+    @Override
+    public void registerBadgeProperty(String propertyName, String propertyDescription) {
+        this.bm.registerProperty(propertyName, propertyDescription);
+    }
+
+    @Override
+    public void adjustGlobalBadgeProperty(UUID uuid, String propertyName, int value) {
+        this.bm.AdjustGlobalBadgeProperty(uuid, propertyName, value);
+    }
+
+    @Override
+    public void setGlobalBadgeProperty(UUID uuid, String propertyName, int value) {
+        this.bm.SetGlobalBadgeProperty(uuid, propertyName, value);
     }
 }

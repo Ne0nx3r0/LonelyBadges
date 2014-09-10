@@ -1,14 +1,8 @@
 package com.ne0nx3r0.badges.badges;
 
 import com.ne0nx3r0.badges.LonelyBadgesPlugin;
-import com.ne0nx3r0.badges.util.FancyMessage;
-import java.util.Date;
+import java.util.logging.Level;
 import net.milkbowl.vault.economy.Economy;
-import net.minecraft.server.v1_7_R3.ChatSerializer;
-import net.minecraft.server.v1_7_R3.IChatBaseComponent;
-import net.minecraft.server.v1_7_R3.PacketPlayOutChat;
-import org.bukkit.ChatColor;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 public class BadgeAwardTask implements Runnable{
@@ -24,19 +18,20 @@ public class BadgeAwardTask implements Runnable{
     
     @Override
     public void run() {
-        for(BadgePlayer bp : this.bm.getOnlineBadgePlayers()){
-            /*try{
-                if(this.economy != null){
-                    for(Player p : plugin.getServer().getOnlinePlayers()){                    
-                        this.bm.SetGlobalBadgeProperty(p.getUniqueId(), BadgeManager.PROPERTY_PLAYER_MONEY, (int) this.economy.getBalance(p.getName()));
-                    }
+        try{
+            if(this.economy != null){
+                for(Player p : plugin.getServer().getOnlinePlayers()){                    
+                    this.bm.SetGlobalBadgeProperty(p.getUniqueId(), BadgeManager.PROPERTY_PLAYER_MONEY, (int) this.economy.getBalance(p.getName()));
                 }
             }
-            catch(Exception ex){
-                this.plugin.getLogger().log(Level.SEVERE, "Economy error occurred!");
-               // this.plugin.getLogger().log(Level.SEVERE, null, ex);
-            }*/
-            
+        }
+        catch(Exception ex){
+            this.plugin.getLogger().log(Level.SEVERE, "Economy error occurred!");
+
+            this.plugin.getLogger().log(Level.SEVERE, null, ex);
+        }
+        
+        for(BadgePlayer bp : this.bm.getOnlineBadgePlayers()){
             for(Badge badge : this.bm.getActiveBadges()){
                 if(!bp.hasBadge(badge) && badge.getRequirements().length > 0){
                     boolean playerEarnedBadge = true;
@@ -74,25 +69,7 @@ public class BadgeAwardTask implements Runnable{
                     }
                     
                     if(playerEarnedBadge){
-                        EarnedBadge earnedBadge = new EarnedBadge(badge,new Date(),null);
-
-                        bp.grantBadge(earnedBadge);
-
-                        Player player = plugin.getServer().getPlayer(bp.getUniqueId());
-                        
-                        String rawMessage = new FancyMessage(player.getName()+" has earned the ")
-                            .then(badge.getName())
-                                .color(ChatColor.GOLD)
-                                .style(ChatColor.BOLD)
-                                .itemTooltip(earnedBadge.getItem())
-                            .then(" badge!")
-                            .toJSONString();
-                        
-                        for(Player p : plugin.getServer().getOnlinePlayers()){
-                            IChatBaseComponent comp = ChatSerializer.a(rawMessage);
-                            PacketPlayOutChat packet = new PacketPlayOutChat(comp, true);
-                            ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
-                        }
+                        this.bm.awardPlayerBadge(bp,badge,null,true);
                     }
                 }
             }

@@ -19,7 +19,9 @@ public class BadgePlayer {
     }
     
     void setProperty(String property, int newValue) {
-        if(this.properties.get(property) != newValue){
+        Integer currentValue = this.properties.get(property);
+        
+        if(currentValue == null || currentValue != newValue){
             this.properties.put(property, newValue);
 
             this.dirty = true;

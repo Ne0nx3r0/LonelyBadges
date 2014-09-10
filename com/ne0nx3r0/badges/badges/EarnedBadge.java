@@ -1,5 +1,6 @@
 package com.ne0nx3r0.badges.badges;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,10 +44,12 @@ public class EarnedBadge {
 
         List<String> lore = new ArrayList<>();
 
-        String[] lines = org.apache.commons.lang.WordUtils.wrap(this.badge.getDescription(), 30, "#!#", true).split("#!#");
+        if(this.badge.getDescription() != null){
+            String[] lines = org.apache.commons.lang.WordUtils.wrap(this.badge.getDescription(), 30, "#!#", true).split("#!#");
 
-        for(String line : lines){
-            lore.add(ChatColor.GRAY+line);
+            for(String line : lines){
+                lore.add(ChatColor.GRAY+line);
+            }
         }
 
         if(this.hasNote()){
@@ -56,6 +59,10 @@ public class EarnedBadge {
                 lore.add(ChatColor.RESET+line);
             }
         }
+        
+        SimpleDateFormat dt = new SimpleDateFormat("EEE, d MMM yyyy HH:mm"); 
+
+        lore.add(ChatColor.DARK_GRAY+dt.format(this.awardedOn));
         
         meta.setLore(lore);
 

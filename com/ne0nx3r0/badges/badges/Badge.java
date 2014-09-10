@@ -1,11 +1,6 @@
 package com.ne0nx3r0.badges.badges;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 public class Badge {
     private final int id;

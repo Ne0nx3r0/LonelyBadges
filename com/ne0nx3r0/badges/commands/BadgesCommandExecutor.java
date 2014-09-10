@@ -20,6 +20,8 @@ public class BadgesCommandExecutor implements CommandExecutor {
         this.registerCommand(new Create(plugin));
         this.registerCommand(new Update(plugin));
         this.registerCommand(new View(plugin));
+        this.registerCommand(new ListProperties(plugin));
+        this.registerCommand(new Grant(plugin));
     }
     
     @Override
