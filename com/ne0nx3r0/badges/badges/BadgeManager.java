@@ -15,9 +15,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Level;
-import net.minecraft.server.v1_7_R4.ChatSerializer;
-import net.minecraft.server.v1_7_R4.IChatBaseComponent;
-import net.minecraft.server.v1_7_R4.PacketPlayOutChat;
+import net.minecraft.server.v1_8_R1.ChatSerializer;
+import net.minecraft.server.v1_8_R1.IChatBaseComponent;
+import net.minecraft.server.v1_8_R1.PacketPlayOutChat;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -25,7 +25,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 public class BadgeManager {
@@ -484,7 +484,7 @@ public class BadgeManager {
         if(announce){
             for(Player p : plugin.getServer().getOnlinePlayers()){
                 IChatBaseComponent comp = ChatSerializer.a(rawMessage);
-                PacketPlayOutChat packet = new PacketPlayOutChat(comp, true);
+                PacketPlayOutChat packet = new PacketPlayOutChat(comp, (byte) 2);
                 ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
             }
         }
